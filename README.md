@@ -12,7 +12,7 @@ This repo provides 2 ways to install TensorFlow on Orange Pi Zero, the first and
 
 Pre-built binary is built using Armbian 5.41 and is targeted for Orange Pi Zero running Armbian 5.41, so this method may or may not work for you. I currently only make wheels for latest versions of python 3.x available on Armbian. 
 * Install Dependencies : `sudo apt update & sudo apt install python3-pip python3-dev`
-* Download latest release : `wget `
+* Download latest release : `wget https://github.com/rezaxdi/tensorflow-on-orangepi-zero/releases/download/v1.6.0/tensorflow-1.6.0-cp35-cp35m-linux_armv7l.whl`
 * Install the wheel : `pip3 install --user tensorflow-1.6.0-cp35-cp35m-linux_armv7l.whl`
 
 ## Installing from source
