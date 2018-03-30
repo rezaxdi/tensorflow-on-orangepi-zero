@@ -2,10 +2,10 @@
 # Installing TensorFlow on Orange Pi Zero (Compiled and tested on 512MB version)
 This repo provides 2 ways to install TensorFlow on Orange Pi Zero, the first and easy one is using a pre compiled python wheel and the second one is by compiling it yourself if the first one fails or if the wheel doesn't suit your needs. This repo can be considered as a fork of [this](https://github.com/samjabrahams/tensorflow-on-raspberry-pi) one but as I wanted to have different release files for Orange Pi only and keep it as clean as possible created it from scratch.
 ## Index 
-1. Installing from wheel
-2. Installing from source
-3. Credits
-4. License
+1. [Installing from wheel](#installing-from-wheel)
+2. [Installing from source](#installing-from-source)
+3. [Credits](#credits)
+4. [License](#license)
 
 ## Installing from wheel 
 **Note: These are unofficial binaries (though built from the minimally modified official source), and thus there is no expectation of support from the TensorFlow team. Please don't create issues for these files in the official TensorFlow repository.**
@@ -18,7 +18,7 @@ Pre-built binary is built using Armbian 5.41 and is targeted for Orange Pi Zero 
 ## Installing from source
 If the earlier method didn't work for you then you can build TensorFlow from the source. Orange Pi Zero suffers from lack of the memory and this can lead to occasional freezes during the build process even when you use lots of swap space so this is a process that can take more than 24 hour and even several days in the worst case. If you are ready follow the guide carefully, in the last part of the guide, I have provided some useful tips to prevent those occasional freezes as much as possible :
 
-[Building from source guide](https://github.com/rezaxdi/tensorflow-on-orangepi-zero)
+[Building from source guide](https://github.com/rezaxdi/tensorflow-on-orangepi-zero/blob/master/GUIDE.md)
 
 ## Credits 
 
