@@ -125,7 +125,7 @@ Let's say to Bazel that our CPU is ARM by adding return "arm" in get_cpu_value f
 sed -i '95i\  return "arm"' tools/cpp/lib_cc_configure.bzl
 ```
 
-Now we can build Bazel! _Note: this also takes some time._
+Now you can compile bazel with the command below. This takes a lot of time and in my case it took around half a day.
 
 ```shell
 sudo ./compile.sh
@@ -139,9 +139,10 @@ sudo cp output/bazel /usr/local/bin/bazel
 
 To make sure it's working properly, run `bazel` on the command line and verify it prints help text. Note: this may take 15-30 seconds to run, so be patient!
 
-```shell
+```
 bazel
 
+[bazel release 0.11.1- (@non-git)]
 Usage: bazel <command> <options> ...
 
 Available commands:
@@ -149,11 +150,15 @@ Available commands:
   build               Builds the specified targets.
   canonicalize-flags  Canonicalizes a list of bazel options.
   clean               Removes output files and optionally stops the server.
+  coverage            Generates code coverage report for specified test targets.
+  cquery              Loads, analyzes, and queries the specified targets w/ configurations.
   dump                Dumps the internal state of the bazel server process.
   fetch               Fetches external repositories that are prerequisites to the targets.
   help                Prints help for commands, or the index.
   info                Displays runtime info about the bazel server.
+  license             Prints the license of this software.
   mobile-install      Installs targets to mobile devices.
+  print_action        Prints the command line args for compiling a file.
   query               Executes a dependency graph query.
   run                 Runs the specified target.
   shutdown            Stops the bazel server.
@@ -207,34 +212,90 @@ Now, scroll down toward the bottom and delete the following line containing `#de
 ...
 #define IS_MOBILE_PLATFORM   <----- DELETE THIS LINE
 ```
+Now let's configure the build, enter options as entered below :
 
-This keeps our Orange Pi device (which has an ARM CPU) from being recognized as a mobile device.
+```
+./configure
+You have bazel 0.11.1- (@non-git) installed.
+Please specify the location of python. [Default is /usr/bin/python]: /usr/bin/python3
 
-Now let's configure the build:
+Found possible Python library paths:
+  /usr/local/lib/python3.5/dist-packages
+  /usr/lib/python3/dist-packages
+Please input the desired Python library path to use.  Default is [/usr/local/lib/python3.5/dist-packages]
+
+Do you wish to build TensorFlow with jemalloc as malloc support? [Y/n]: y
+jemalloc as malloc support will be enabled for TensorFlow.
+
+Do you wish to build TensorFlow with Google Cloud Platform support? [Y/n]: n
+No Google Cloud Platform support will be enabled for TensorFlow.
+
+Do you wish to build TensorFlow with Hadoop File System support? [Y/n]: n
+No Hadoop File System support will be enabled for TensorFlow.
+
+Do you wish to build TensorFlow with Amazon S3 File System support? [Y/n]: n
+No Amazon S3 File System support will be enabled for TensorFlow.
+
+Do you wish to build TensorFlow with Apache Kafka Platform support? [y/N]: n
+No Apache Kafka Platform support will be enabled for TensorFlow.
+
+Do you wish to build TensorFlow with XLA JIT support? [y/N]: n
+No XLA JIT support will be enabled for TensorFlow.
+
+Do you wish to build TensorFlow with GDR support? [y/N]: n
+No GDR support will be enabled for TensorFlow.
+
+Do you wish to build TensorFlow with VERBS support? [y/N]: n
+No VERBS support will be enabled for TensorFlow.
+
+Do you wish to build TensorFlow with OpenCL SYCL support? [y/N]: n
+No OpenCL SYCL support will be enabled for TensorFlow.
+
+Do you wish to build TensorFlow with CUDA support? [y/N]: n
+No CUDA support will be enabled for TensorFlow.
+
+Do you wish to build TensorFlow with MPI support? [y/N]: n
+No MPI support will be enabled for TensorFlow.
+
+Please specify optimization flags to use during compilation when bazel option "--config=opt" is specified [Default is -march=native]: 
+
+Would you like to interactively configure ./WORKSPACE for Android builds? [y/N]: n
+Not configuring the WORKSPACE for Android builds.
+
+Preconfigured Bazel build configs. You can use any of the below by adding "--config=<>" to your build command. See tools/bazel.rc for more details.
+        --config=mkl            # Build with MKL support.
+        --config=monolithic     # Config for mostly static monolithic build.
+        --config=tensorrt       # Build with TensorRT support.
+Configuration finished
+```
+Before building tensor one important step needs to be taken otherwise the resulted python wheel of TensorFlow will give you error when you try to import it inside python and that means you have wasted all of your precious time ! What we are going to do is commenting out some lines according to this [issue](https://github.com/tensorflow/tensorflow/issues/17986) :
 
 ```shell
-./configure
-
-Please specify the location of python. [Default is /usr/bin/python]: /usr/bin/python
-Please specify optimization flags to use during compilation when bazel option "--config=opt" is specified [Default is -march=native]: 
-Do you wish to use jemalloc as the malloc implementation? [Y/n] Y
-Do you wish to build TensorFlow with Google Cloud Platform support? [y/N] N
-Do you wish to build TensorFlow with Hadoop File System support? [y/N] N
-Do you wish to build TensorFlow with the XLA just-in-time compiler (experimental)? [y/N] N
-Please input the desired Python library path to use. Default is [/usr/local/lib/python2.7/dist-packages]
-Do you wish to build TensorFlow with OpenCL support? [y/N] N
-Do you wish to build TensorFlow with CUDA support? [y/N] N
+sed -i -e 's/#include "tensorflow\/core\/kernels\/concat_lib.h"/\/\/#include "tensorflow\/core\/kernels\/concat_lib.h"/g' core/kernels/list_kernels.h
+sed -i -e 's/#include "tensorflow\/core\/kernels\/concat_lib.h"/\/\/#include "tensorflow\/core\/kernels\/concat_lib.h"/g' core/kernels/list_kernels.cc
+sed -i -e 's/ConcatCPU<T>(c->device(), inputs_flat, &output_flat);/\/\/ConcatCPU<T>(c->device(), inputs_flat, &output_flat);/g' core/kernels/list_kernels.h
 ```
-
-_Note: if you want to build for Python 3, specify `/usr/bin/python3` for Python's location and `/usr/local/lib/python3.4/dist-packages` for the Python library path._
-
-Bazel will now attempt to clean. This takes a really long time (and often ends up erroring out anyway), so you can send some keyboard interrupts (CTRL-C) to skip this and save some time.
-
-Now we can use it to build TensorFlow! **Warning: This takes a really, really long time. Several hours.**
+Now we are ready to build TensorFlow which on Orange Pi Zero is a little more time-consuming than 1GB RAM boards (when I say a little more it means maybe 3 to 10 times more !) so fire the command below and just leave your OPZ doing it's job while you check on it randomly.
 
 ```shell
 bazel build -c opt --copt="-mfpu=neon-vfpv4" --copt="-funsafe-math-optimizations" --copt="-ftree-vectorize" --copt="-fomit-frame-pointer" --local_resources 512,1.0,1.0 --verbose_failures tensorflow/tools/pip_package:build_pip_package
 ```
+
+During build process, your Orange Pi Zero may freeze completely and you may not be able to reach it through ssh so it doesn't necessary mean that it is actually compiling anything and many times it means that you need to restart your device and run the above command again to continue the build process. I have provided some times in [tips](#some-tips) section to avoid these situations as much as possible. And finally you will see this line :
+
+```shell
+INFO: Build completed successfully, 4 total actions
+```
+Now you can finally make a python wheel, issue the following command :
+
+```shell
+bazel-bin/tensorflow/tools/pip_package/build_pip_package /tmp/tensorflow_pkg
+```
+This one will not take too much time and you can install your python package form `/tmp/tensorflow_pkg` directory :
+```shell
+pip3 install --user /tmp/tensorflow_pkg/ensorflow-1.6.0-cp35-cp35m-linux_armv7l.whl
+```
+And your TensorFlow is ready to use.
 
 ## Cleaning Up
 
@@ -253,8 +314,6 @@ sudo nano /etc/fstab
 ```
 
 Then reboot your Orange Pi.
-
-**And you're done!** You deserve a break.
 
 ## References
 
