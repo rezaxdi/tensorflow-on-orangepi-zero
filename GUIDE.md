@@ -322,4 +322,8 @@ Then reboot your Orange Pi.
 
 ## Some Tips
 
-soon
+Here are some tips to build TensorFlow and Bazel as fast as possible while preventing from occasional freezes that can happen on Orange Pi Zero, these are my own experiences and may or may not work for you :
+
+* Use at least a 4GB flash memory drive (I saw some peaks of more than 1GB swap usage during my experience).
+* Use a USB3 flash memory drive (While OPZ has only USB2 port but because USB3 flash memories are generally faster even on USB2 ports they can speed up the process).
+* Disable any swap on SD card (Armbian comes with some swap space on SD card itself which slows down the building procedure, you can disable it from /etc/fstab)
